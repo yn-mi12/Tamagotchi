@@ -32,32 +32,14 @@ class ViewProvider {
 	resolveWebviewView(webviewView, _webviewViewOptions, _token) {
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')]
+			localResourceRoots: [this.extensionUri]
 		};
-		webviewView.webview.html = getHtmlForWebview(webviewView.webview, this.extensionUri);
+		webviewView.webview.html = getHtmlForWebview(webviewView.webview);
 	}
 }
 
-/** 
-This function returns the HTML for the webview
-* @param {vscode.Webview} webview
-* @param {vscode.Uri} extensionUri
-*/
-function getHtmlForWebview(webview, extensionUri){
-	try{
-		const path = require('path');
-		const fs = require('fs');
-		const indexPath = path.join(extensionUri.fsPath, 'media', 'index.html');
-		let html = fs.readFileSync(indexPath, 'utf8');
-
-		const baseUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media'));
-		html = html.replace(/{{baseUri}}/g, baseUri.toString());
-		return html;
-	}
-	catch(err){
-		console.error(err);
-		return `<h1>Error loading HTML</h1><p>${err.message}</p>`;
-	}
+function getHtmlForWebview(webview){
+	
 }
 
 function deactivate() {}

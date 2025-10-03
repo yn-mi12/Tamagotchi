@@ -12,10 +12,21 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "Tamagotchi.helloWorld",
-      "title": "Hello World"
-    }]
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "Tamagotchi.view",
+          "name": "Tamagotchi"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "Tamagotchi.hello",
+        "title": "Tamagotchi: Hello World"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
