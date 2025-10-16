@@ -1,0 +1,14 @@
+#fire{
+    width: 300px;
+    height: 300px;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    background-color: black;
+    box-shadow: inset 0 0 10px #40408b;
+    /* border-top-right-radius: 50%; */
+    border-radius: 50%;
+}

@@ -7,13 +7,11 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	const disposable = vscode.commands.registerCommand('Tamagotchi.hello', function () {
-		// vscode.window.showInformationMessage('Hello World from Tamagotchi!');
-		const provider = new ViewProvider(context.extensionUri);
-		vscode.window.registerWebviewViewProvider('Tamagotchi.view', provider);
-	});
+	// Register the webview provider during activation
+	const provider = new ViewProvider(context.extensionUri);
+	const webviewDisposable = vscode.window.registerWebviewViewProvider('Tamagotchi.view', provider);
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(webviewDisposable);
 }
 
 class ViewProvider {

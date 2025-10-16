@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tamagotchi</title>
+  <link rel="stylesheet" href="{{baseUri}}/style.css">
 </head>
 <body>
-  <h1>Your Tamagotchi 👾</h1>
-  <img src="{{baseUri}}/pixel-monster.png" alt="pet" width="200">
+  <canvas id="fire"></canvas>
+  <script>
+    const fireImgSrc = "{{baseUri}}/fire.png";
+  </script>
+  <script src="{{baseUri}}/script.js"></script>
 </body>
 </html>
