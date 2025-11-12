@@ -12,29 +12,31 @@ const spriteHeight = 150;
 
 let gameFrame = 0;
 const staggerFrames = 20;
-let state = "init";
+let state = "idle";
 let currentStateIndex = 0;
 let stateFrameCount = 0;
 
 const spriteAnimations = [];
+// I'll change names later
 const animationStates = [
     {
-        name: 'init',
+        name: 'idle',
         frames: 8,
     },
     {
-        name: 'burn',
+        name: 'play',
         frames: 8,
     },
     {
-        name: 'decay',
+        name: 'feed',
         frames: 8,
     },
     {
-        name: 'extinguish',
+        name: 'delete',
         frames: 4,
     }
 ];
+
 animationStates.forEach((state, index) => {
     let frames = {
         loc: [],
@@ -43,6 +45,16 @@ animationStates.forEach((state, index) => {
         frames.loc.push({x: i * spriteWidth, y: index * spriteHeight});
     }
     spriteAnimations[state.name] = frames;
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('message', event => {
+        const message = event.data;
+        if (message.command === 'setState') {
+            state = message.state;
+            console.log("State changed to:", state);
+        }
+    });
 });
 
 function animate() {
@@ -55,12 +67,12 @@ function animate() {
     gameFrame++;
     
     // this moves through all rows, comment later maybe
-    stateFrameCount++;
-    if (stateFrameCount >= spriteAnimations[state].loc.length * staggerFrames) {
-        currentStateIndex = (currentStateIndex + 1) % animationStates.length;
-        state = animationStates[currentStateIndex].name;
-        stateFrameCount = 0;
-    }
+    // stateFrameCount++;
+    // if (stateFrameCount >= spriteAnimations[state].loc.length * staggerFrames) {
+    //     currentStateIndex = (currentStateIndex + 1) % animationStates.length;
+    //     state = animationStates[currentStateIndex].name;
+    //     stateFrameCount = 0;
+    // }
     
     requestAnimationFrame(animate); 
 }

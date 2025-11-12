@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./extension.js",
+  "main": "./src/extension.js",
   "contributes": {
     "views": {
       "explorer": [
@@ -25,6 +25,22 @@
       {
         "command": "Tamagotchi.hello",
         "title": "Tamagotchi: Hello World"
+      },
+      {
+        "command": "Tamagotchi.create",
+        "title": "Tamagotchi: Create Tamagotchi"
+      },
+      {
+        "command": "Tamagotchi.delete",
+        "title": "Tamagotchi: Delete Tamagotchi"
+      },
+      {
+        "command": "Tamagotchi.play",
+        "title": "Tamagotchi: Play with Tamagotchi"
+      },
+      {
+        "command": "Tamagotchi.feed",
+        "title": "Tamagotchi: Feed Tamagotchi"
       }
     ]
   },
