@@ -1,12 +1,10 @@
-import { ActivityType } from "./activities.ts";
-
 export class Pet {
     name: string;
     type: string;
     health: number;
     happiness: number;
     hunger: number;
-    currentActivity?: ActivityType;
+    currentActivity?: String;
 
     constructor(name: string, type: string) {
         this.name = name;
@@ -14,34 +12,34 @@ export class Pet {
         this.health = 20;
         this.happiness = 20;
         this.hunger = 0;
-        this.currentActivity = ActivityType.Idle;
+        this.currentActivity = "idle";
     }
     
-    performActivity(activity: ActivityType) {
+    performActivity(activity: String) {
         switch (activity) {
-            case ActivityType.Play:
+            case "play":
                 this.happiness = Math.min(20, this.happiness + 1);
                 this.hunger = Math.min(20, this.hunger + 1);
-                this.currentActivity = ActivityType.Play;
+                this.currentActivity = "play";
                 console.log(`${this.name} is playing.`);
                 break;
-            case ActivityType.Feed:
+            case "feed":
                 this.hunger = Math.max(0, this.hunger - 1);
                 this.health = Math.min(20, this.health + 1);
-                this.currentActivity = ActivityType.Feed;
+                this.currentActivity = "feed";
                 console.log(`${this.name} is eating.`);
                 break;
-            case ActivityType.Idle:
+            case "idle":
                 this.hunger = Math.min(20, this.hunger + 1);
                 this.happiness = Math.max(0, this.happiness - 1);
                 this.health = Math.max(0, this.health - 1);
-                this.currentActivity = ActivityType.Idle;
+                this.currentActivity = "idle";
                 console.log(`${this.name} is idling.`);
                 break;
-            case ActivityType.Sleep:
+            case "sleep":
                 this.health = Math.min(20, this.health + 2);
                 this.hunger = Math.min(20, this.hunger + 1);
-                this.currentActivity = ActivityType.Sleep;
+                this.currentActivity = "sleep";
                 console.log(`${this.name} is sleeping.`);
                 break;
             default:

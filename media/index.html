@@ -7,9 +7,52 @@
   <link rel="stylesheet" href="{{baseUri}}/style.css">
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+
+  <div id="container">
+    <div id="top-stats">
+        <div class="stat"><strong>Name:</strong> <span id="pet-name"></span></div>
+        <div class="stat"><strong>Type:</strong> <span id="pet-type"></span></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="bottom-stats">
+        <div class="stat"><strong>Hunger:</strong> <span id="pet-hunger"></span></div>
+        <div class="stat"><strong>Happiness:</strong> <span id="pet-happiness"></span></div>
+        <div class="stat"><strong>Health:</strong> <span id="pet-health"></span></div>
+    </div>
+  </div>
+
   <script>
-    const imgSrc = "{{baseUri}}/fire.png";
+    const vscode = acquireVsCodeApi();
+    const imgSrc = "{{baseUri}}/sprite_sheet.png";
+
+    vscode.postMessage({ command: 'getState' });
+
+    window.addEventListener('message', event => {
+      const message = event.data;
+      if (message.command === 'stateData') {
+        const pet = message.pet;
+        console.log('Received pet:', pet);
+        updateStats(pet);
+      }
+      if (message.command === 'setState') {
+        const pet = message.pet;
+        console.log('Received pet:', pet);
+        updateStats(pet);
+      }
+    });
+
+
+    function updateStats(pet) {
+        if (!pet) return;
+
+        document.getElementById('pet-name').textContent = pet.name;
+        document.getElementById('pet-type').textContent = pet.type;
+        document.getElementById('pet-hunger').textContent = pet.hunger;
+        document.getElementById('pet-happiness').textContent = pet.happiness;
+        document.getElementById('pet-health').textContent = pet.health;
+    }
   </script>
   <script src="{{baseUri}}/script.js"></script>
 </body>

@@ -1,17 +1,17 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-const CANVAS_WIDTH = canvas.width = 300;
-const CANVAS_HEIGHT = canvas.height = 300;
+const CANVAS_WIDTH = canvas.width = 220;
+const CANVAS_HEIGHT = canvas.height = 280;
 
 const img = new Image();
 img.src = imgSrc;
 
-const spriteWidth = 150;
-const spriteHeight = 150;
+const spriteWidth = 1200;
+const spriteHeight = 1920;
 
 let gameFrame = 0;
-const staggerFrames = 20;
+const staggerFrames = 60;
 let state = "idle";
 let currentStateIndex = 0;
 let stateFrameCount = 0;
@@ -21,20 +21,20 @@ const spriteAnimations = [];
 const animationStates = [
     {
         name: 'idle',
-        frames: 8,
+        frames: 7,
     },
-    {
-        name: 'play',
-        frames: 8,
-    },
-    {
-        name: 'feed',
-        frames: 8,
-    },
-    {
-        name: 'delete',
-        frames: 4,
-    }
+    // {
+    //     name: 'play',
+    //     frames: 8,
+    // },
+    // {
+    //     name: 'feed',
+    //     frames: 8,
+    // },
+    // {
+    //     name: 'delete',
+    //     frames: 4,
+    // }
 ];
 
 animationStates.forEach((state, index) => {
@@ -50,9 +50,9 @@ animationStates.forEach((state, index) => {
 window.addEventListener('message', (event) => {
     const message = event.data;
     if (message.command === 'setState') {
-        state = message.state;
+        state = message.pet.currentActivity;
         console.log("🐾 Tamagotchi state changed to:", state);
-        if(state === 'sleep') state = 'idle'; // temporary fix for sleep state
+        if(state != 'idle') state = 'idle'; // temporary fix 
     }
 });
 

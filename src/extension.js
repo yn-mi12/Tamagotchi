@@ -1,4 +1,3 @@
-const { ActivityType } = require('./commons/activities.ts');
 const { Pet } = require('./commons/pet.ts');
 const vscode = require('vscode');
 
@@ -21,10 +20,11 @@ function deserializePet(data) {
 	pet.hunger = data.hunger;
 	pet.happiness = data.happiness;
 	pet.health = data.health;
+	pet.currentActivity = data.currentActivity;
 	return pet;
 }
 
-async function performPetAction(context, activity, message,state) {
+async function performPetAction(context, activity, message) {
     if (!context.globalState.get('tamagotchiExists')) {
         vscode.window.showInformationMessage('No Tamagotchi! Create one first.');
         return;
@@ -39,7 +39,9 @@ async function performPetAction(context, activity, message,state) {
     pet.performActivity(activity);
     await context.globalState.update('pet', pet);
 
-    if (viewProvider) viewProvider.updateState(state);
+    if (viewProvider){
+		viewProvider.updateState({pet});
+	}
 }
 
 /**
@@ -56,7 +58,7 @@ function activate(context) {
 		if(existingPet){
 			console.log(existingPet);
 
-			existingPet.performActivity(ActivityType.Idle);
+			existingPet.performActivity("idle");
 			context.globalState.update('pet', existingPet);
 		}
 	}
@@ -84,7 +86,7 @@ function activate(context) {
 		//TODO fix this later
 		vscode.commands.registerCommand('Tamagotchi.delete', async () => {
 			try{
-				await performPetAction(context, ActivityType.Delete, 'Deleted Tamagotchi!', 'delete');
+				await performPetAction(context, "delete", 'Deleted Tamagotchi!');
 				await context.globalState.update('tamagotchiExists', false);
 				await context.globalState.update('pet', undefined);
 				return;
@@ -94,16 +96,16 @@ function activate(context) {
 		}),
 
 		vscode.commands.registerCommand('Tamagotchi.play', async () => {
-			await performPetAction(context, ActivityType.Play, 'Playing with Tamagotchi!', 'play');
+			await performPetAction(context, "play", 'Playing with Tamagotchi!');
 		}),
 
 		vscode.commands.registerCommand('Tamagotchi.feed', async () => {
-			await performPetAction(context, ActivityType.Feed, 'Feeding Tamagotchi!', 'feed');
+			await performPetAction(context, "feed", 'Feeding Tamagotchi!');
 		}),
 
 		// current sprite has only 4 states
 		vscode.commands.registerCommand('Tamagotchi.sleep', async () => {
-			await performPetAction(context, ActivityType.Sleep, 'Tamagotchi is going to sleep!', 'sleep');
+			await performPetAction(context, "sleep", 'Tamagotchi is going to sleep!');
 		}),
 	);
 }
@@ -132,18 +134,18 @@ class ViewProvider {
 		};
 		webviewView.webview.html = getHtmlForWebview(webviewView.webview, this.extensionUri);
 
-		// webviewView.webview.onDidReceiveMessage(async (message) => {
-		// 	if(message.command === 'getState'){
-		// 		const pet = await context.globalState.get('pet') || null;
-		// 		webviewView.webview.postMessage({ command: 'stateData', pet });
-		// 	}
-		// });
+		webviewView.webview.onDidReceiveMessage(async (message) => {
+			if(message.command === 'getState'){
+				const pet = await this.context.globalState.get('pet') || null;
+				webviewView.webview.postMessage({ command: 'stateData', pet });
+			}
+		});
 	}
 
-	updateState(state) {
+	updateState(data) {
 		if (this._view) {
-			console.log("Updating webview state to:", state);
-			this._view.webview.postMessage({ command: 'setState', state });
+			console.log(data);
+			this._view.webview.postMessage({ command: 'setState', pet: data.pet});
 		}
 	}
 }
