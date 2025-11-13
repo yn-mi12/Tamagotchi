@@ -1,11 +1,11 @@
-const canvas = document.getElementById('fire');
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const CANVAS_WIDTH = canvas.width = 300;
 const CANVAS_HEIGHT = canvas.height = 300;
 
 const img = new Image();
-img.src = fireImgSrc;
+img.src = imgSrc;
 
 const spriteWidth = 150;
 const spriteHeight = 150;
@@ -47,14 +47,12 @@ animationStates.forEach((state, index) => {
     spriteAnimations[state.name] = frames;
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('message', event => {
-        const message = event.data;
-        if (message.command === 'setState') {
-            state = message.state;
-            console.log("State changed to:", state);
-        }
-    });
+window.addEventListener('message', (event) => {
+    const message = event.data;
+    if (message.command === 'setState') {
+        state = message.state;
+        console.log("🐾 Tamagotchi state changed to:", state);
+    }
 });
 
 function animate() {

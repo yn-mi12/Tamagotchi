@@ -1,17 +1,26 @@
-const { ActivityType } = require('./activities.ts');
+const { ActivityType } = require('./commons/activities.ts');
+const { Pet } = require('./commons/pet.ts');
 const vscode = require('vscode');
 
 /**
+ * Registers the Tamagotchi view in the sidebar
  * @param {vscode.ExtensionContext} context
  */
-function registerTamagotchiView (activity, context) {
-	const provider = new ViewProvider(context.extensionUri);
+function registerTamagotchiView (context) {
+	const provider = new ViewProvider(context.extensionUri, context);
 	const disposable = vscode.window.registerWebviewViewProvider('Tamagotchi.view', provider);
 	context.subscriptions.push(disposable);
-
-	provider.setState(activity);
+	context.globalState.update('tamagotchiViewProvider', provider);
 }
 
+function deserializePet(data) {
+	if (!data) return null;
+	const pet = new Pet(data.name, data.type);
+	pet.hunger = data.hunger;
+	pet.happiness = data.happiness;
+	pet.health = data.health;
+	return pet;
+}
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -25,8 +34,13 @@ function activate(context) {
 			}
 			vscode.window.showInformationMessage('Tamagotchi Created!');
 			await context.globalState.update('tamagotchiCreated', true);
+			//TODO user input and options later
 			try {
-				registerTamagotchiView(ActivityType.Idle,context);
+				let newPet = new Pet('First', 'someType');
+				console.log(newPet);
+
+				await context.globalState.update('pet', newPet);
+				registerTamagotchiView(context);
 				return;
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
@@ -40,7 +54,8 @@ function activate(context) {
 			vscode.window.showInformationMessage('Tamagotchi Deleted!');
 			await context.globalState.update('tamagotchiCreated', false);
 			try{
-				registerTamagotchiView(ActivityType.Delete,context);
+				//TODO fix this later
+				await context.globalState.update('pet', undefined);
 				return;
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
@@ -53,7 +68,16 @@ function activate(context) {
 			}
 			vscode.window.showInformationMessage('Playing with Tamagotchi!');
 			try{
-				registerTamagotchiView(ActivityType.Play,context);
+				let existingPetData = context.globalState.get('pet');
+				let existingPet = deserializePet(existingPetData);
+				console.log(existingPet);
+
+				existingPet.performActivity(ActivityType.Play);
+				await context.globalState.update('pet', existingPet);
+
+				const provider = context.globalState.get('tamagotchiViewProvider');
+				if (provider) provider.updateState('play');
+
 				return;
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
@@ -66,24 +90,66 @@ function activate(context) {
 			}
 			vscode.window.showInformationMessage('Feeding Tamagotchi!');
 			try{
-				registerTamagotchiView(ActivityType.Feed,context);
+				let existingPetData = context.globalState.get('pet');
+				let existingPet = deserializePet(existingPetData);
+				console.log(existingPet);
+
+				existingPet.performActivity(ActivityType.Feed);
+				await context.globalState.update('pet', existingPet);
+
+				const provider = context.globalState.get('tamagotchiViewProvider');
+				if (provider) provider.updateState('feed');
+				
+				return;
+			} catch (err) {
+				console.error("Could not reveal webview:", err);
+			}
+		}),
+		vscode.commands.registerCommand('Tamagotchi.sleep', async () => {
+			if(!context.globalState.get('tamagotchiCreated')){
+				vscode.window.showInformationMessage('No Tamagotchi to put to sleep! Create one first.');
+				return;
+			}
+			vscode.window.showInformationMessage('Putting Tamagotchi to sleep!');
+			try{
+				let existingPetData = context.globalState.get('pet');
+				let existingPet = deserializePet(existingPetData);
+				existingPet.performActivity(ActivityType.Sleep);
+				await context.globalState.update('pet', existingPet);
+				
+				const provider = context.globalState.get('tamagotchiViewProvider');
+				if (provider) provider.updateState('sleep');
+				
 				return;
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
 			}
 		})
 	);
+	//is it necessary? ig yes
 	if(context.globalState.get('tamagotchiCreated')){
-		registerTamagotchiView(ActivityType.Idle,context);
+		let existingPetData = context.globalState.get('pet');
+		let existingPet = deserializePet(existingPetData);
+		console.log(existingPet);
+
+		existingPet.performActivity(ActivityType.Idle);
+		context.globalState.update('pet', existingPet);
+		
+		const provider = context.globalState.get('tamagotchiViewProvider');
+		if (provider) provider.updateState('idle');
+				
+		return;
 	}
 }
 
 class ViewProvider {
 	/**
 	 * @param {vscode.Uri} extensionUri
+	 * @param {vscode.ExtensionContext} context
 	 */
-	constructor(extensionUri) {
+	constructor(extensionUri, context) {
 		this.extensionUri = extensionUri;
+		this.context = context;
 		this._view = undefined;
 	}
 
@@ -99,14 +165,18 @@ class ViewProvider {
 			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')]
 		};
 		webviewView.webview.html = getHtmlForWebview(webviewView.webview, this.extensionUri);
+
+		webviewView.webview.onDidReceiveMessage(async (message) => {
+			if(message.command === 'getState'){
+				const pet = await context.globalState.get('pet') || null;
+				webviewView.webview.postMessage({ command: 'stateData', pet });
+			}
+		});
 	}
 
-	setState(activityType) {
+	updateState(state) {
 		if (this._view) {
-			this._view.webview.postMessage({
-				command: 'setState',
-				state: activityType
-			});
+			this._view.webview.postMessage({ command: 'setState', state });
 		}
 	}
 }

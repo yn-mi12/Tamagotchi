@@ -3,6 +3,7 @@ export const ActivityType ={
     Play: 'play',
     Feed: 'feed',
     Delete: 'delete',
+    Sleep: 'sleep',
 } as const;
 
 export type ActivityType = typeof ActivityType[keyof typeof ActivityType];
