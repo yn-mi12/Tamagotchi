@@ -52,6 +52,7 @@ window.addEventListener('message', (event) => {
     if (message.command === 'setState') {
         state = message.state;
         console.log("🐾 Tamagotchi state changed to:", state);
+        if(state === 'sleep') state = 'idle'; // temporary fix for sleep state
     }
 });
 

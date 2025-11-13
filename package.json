@@ -23,8 +23,8 @@
     },
     "commands": [
       {
-        "command": "Tamagotchi.hello",
-        "title": "Tamagotchi: Hello World"
+        "command": "Tamagotchi.sleep",
+        "title": "Tamagotchi: Put Tamagotchi to Sleep"
       },
       {
         "command": "Tamagotchi.create",

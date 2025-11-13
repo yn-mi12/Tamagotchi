@@ -2,15 +2,17 @@ const { ActivityType } = require('./commons/activities.ts');
 const { Pet } = require('./commons/pet.ts');
 const vscode = require('vscode');
 
+/** @type {ViewProvider | undefined} */
+let viewProvider;
+
 /**
  * Registers the Tamagotchi view in the sidebar
  * @param {vscode.ExtensionContext} context
  */
-function registerTamagotchiView (context) {
-	const provider = new ViewProvider(context.extensionUri, context);
-	const disposable = vscode.window.registerWebviewViewProvider('Tamagotchi.view', provider);
+function registerView (context) {
+	viewProvider = new ViewProvider(context.extensionUri, context);
+	const disposable = vscode.window.registerWebviewViewProvider('Tamagotchi.view', viewProvider);
 	context.subscriptions.push(disposable);
-	context.globalState.update('tamagotchiViewProvider', provider);
 }
 
 function deserializePet(data) {
@@ -22,10 +24,44 @@ function deserializePet(data) {
 	return pet;
 }
 
+async function performPetAction(context, activity, message,state) {
+    if (!context.globalState.get('tamagotchiExists')) {
+        vscode.window.showInformationMessage('No Tamagotchi! Create one first.');
+        return;
+    }
+
+    vscode.window.showInformationMessage(message);
+
+    let petData = context.globalState.get('pet');
+    let pet = deserializePet(petData);
+	console.log(pet);
+
+    pet.performActivity(activity);
+    await context.globalState.update('pet', pet);
+
+    if (viewProvider) viewProvider.updateState(state);
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+	//TODO show some default view if no pet exists
+
+	registerView(context);
+
+	if(context.globalState.get('tamagotchiExists')){
+		let existingPetData = context.globalState.get('pet');
+		let existingPet = deserializePet(existingPetData);
+		if(existingPet){
+			console.log(existingPet);
+
+			existingPet.performActivity(ActivityType.Idle);
+			context.globalState.update('pet', existingPet);
+		}
+	}
+
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('Tamagotchi.create', async () => {
 			if(context.globalState.get('tamagotchiCreated')){
@@ -33,113 +69,43 @@ function activate(context) {
 				return;
 			}
 			vscode.window.showInformationMessage('Tamagotchi Created!');
-			await context.globalState.update('tamagotchiCreated', true);
+			await context.globalState.update('tamagotchiExists', true);
 			//TODO user input and options later
 			try {
 				let newPet = new Pet('First', 'someType');
-				console.log(newPet);
-
 				await context.globalState.update('pet', newPet);
-				registerTamagotchiView(context);
-				return;
+
+				if(viewProvider) viewProvider.updateState('idle');
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
 			}
 		}),
+
+		//TODO fix this later
 		vscode.commands.registerCommand('Tamagotchi.delete', async () => {
-			if(!context.globalState.get('tamagotchiCreated')){
-				vscode.window.showInformationMessage('No Tamagotchi to delete!');
-				return;
-			}
-			vscode.window.showInformationMessage('Tamagotchi Deleted!');
-			await context.globalState.update('tamagotchiCreated', false);
 			try{
-				//TODO fix this later
+				await performPetAction(context, ActivityType.Delete, 'Deleted Tamagotchi!', 'delete');
+				await context.globalState.update('tamagotchiExists', false);
 				await context.globalState.update('pet', undefined);
 				return;
 			} catch (err) {
 				console.error("Could not reveal webview:", err);
 			}
 		}),
+
 		vscode.commands.registerCommand('Tamagotchi.play', async () => {
-			if(!context.globalState.get('tamagotchiCreated')){
-				vscode.window.showInformationMessage('No Tamagotchi to play with! Create one first.');
-				return;
-			}
-			vscode.window.showInformationMessage('Playing with Tamagotchi!');
-			try{
-				let existingPetData = context.globalState.get('pet');
-				let existingPet = deserializePet(existingPetData);
-				console.log(existingPet);
-
-				existingPet.performActivity(ActivityType.Play);
-				await context.globalState.update('pet', existingPet);
-
-				const provider = context.globalState.get('tamagotchiViewProvider');
-				if (provider) provider.updateState('play');
-
-				return;
-			} catch (err) {
-				console.error("Could not reveal webview:", err);
-			}
+			await performPetAction(context, ActivityType.Play, 'Playing with Tamagotchi!', 'play');
 		}),
+
 		vscode.commands.registerCommand('Tamagotchi.feed', async () => {
-			if(!context.globalState.get('tamagotchiCreated')){
-				vscode.window.showInformationMessage('No Tamagotchi to feed! Create one first.');
-				return;
-			}
-			vscode.window.showInformationMessage('Feeding Tamagotchi!');
-			try{
-				let existingPetData = context.globalState.get('pet');
-				let existingPet = deserializePet(existingPetData);
-				console.log(existingPet);
-
-				existingPet.performActivity(ActivityType.Feed);
-				await context.globalState.update('pet', existingPet);
-
-				const provider = context.globalState.get('tamagotchiViewProvider');
-				if (provider) provider.updateState('feed');
-				
-				return;
-			} catch (err) {
-				console.error("Could not reveal webview:", err);
-			}
+			await performPetAction(context, ActivityType.Feed, 'Feeding Tamagotchi!', 'feed');
 		}),
-		vscode.commands.registerCommand('Tamagotchi.sleep', async () => {
-			if(!context.globalState.get('tamagotchiCreated')){
-				vscode.window.showInformationMessage('No Tamagotchi to put to sleep! Create one first.');
-				return;
-			}
-			vscode.window.showInformationMessage('Putting Tamagotchi to sleep!');
-			try{
-				let existingPetData = context.globalState.get('pet');
-				let existingPet = deserializePet(existingPetData);
-				existingPet.performActivity(ActivityType.Sleep);
-				await context.globalState.update('pet', existingPet);
-				
-				const provider = context.globalState.get('tamagotchiViewProvider');
-				if (provider) provider.updateState('sleep');
-				
-				return;
-			} catch (err) {
-				console.error("Could not reveal webview:", err);
-			}
-		})
-	);
-	//is it necessary? ig yes
-	if(context.globalState.get('tamagotchiCreated')){
-		let existingPetData = context.globalState.get('pet');
-		let existingPet = deserializePet(existingPetData);
-		console.log(existingPet);
 
-		existingPet.performActivity(ActivityType.Idle);
-		context.globalState.update('pet', existingPet);
-		
-		const provider = context.globalState.get('tamagotchiViewProvider');
-		if (provider) provider.updateState('idle');
-				
-		return;
-	}
+		// current sprite has only 4 states
+		vscode.commands.registerCommand('Tamagotchi.sleep', async () => {
+			await performPetAction(context, ActivityType.Sleep, 'Tamagotchi is going to sleep!', 'sleep');
+		}),
+	);
 }
 
 class ViewProvider {
@@ -166,16 +132,17 @@ class ViewProvider {
 		};
 		webviewView.webview.html = getHtmlForWebview(webviewView.webview, this.extensionUri);
 
-		webviewView.webview.onDidReceiveMessage(async (message) => {
-			if(message.command === 'getState'){
-				const pet = await context.globalState.get('pet') || null;
-				webviewView.webview.postMessage({ command: 'stateData', pet });
-			}
-		});
+		// webviewView.webview.onDidReceiveMessage(async (message) => {
+		// 	if(message.command === 'getState'){
+		// 		const pet = await context.globalState.get('pet') || null;
+		// 		webviewView.webview.postMessage({ command: 'stateData', pet });
+		// 	}
+		// });
 	}
 
 	updateState(state) {
 		if (this._view) {
+			console.log("Updating webview state to:", state);
 			this._view.webview.postMessage({ command: 'setState', state });
 		}
 	}

@@ -7,3 +7,4 @@ export const ActivityType ={
 } as const;
 
 export type ActivityType = typeof ActivityType[keyof typeof ActivityType];
+//TODO fix this to be enum somehow

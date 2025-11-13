@@ -23,11 +23,13 @@ export class Pet {
                 this.happiness = Math.min(20, this.happiness + 1);
                 this.hunger = Math.min(20, this.hunger + 1);
                 this.currentActivity = ActivityType.Play;
+                console.log(`${this.name} is playing.`);
                 break;
             case ActivityType.Feed:
                 this.hunger = Math.max(0, this.hunger - 1);
                 this.health = Math.min(20, this.health + 1);
                 this.currentActivity = ActivityType.Feed;
+                console.log(`${this.name} is eating.`);
                 break;
             case ActivityType.Idle:
                 this.hunger = Math.min(20, this.hunger + 1);
@@ -40,6 +42,7 @@ export class Pet {
                 this.health = Math.min(20, this.health + 2);
                 this.hunger = Math.min(20, this.hunger + 1);
                 this.currentActivity = ActivityType.Sleep;
+                console.log(`${this.name} is sleeping.`);
                 break;
             default:
                 break;
