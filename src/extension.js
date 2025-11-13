@@ -26,15 +26,16 @@ function deserializePet(data) {
 
 async function performPetAction(context, activity, message) {
     if (!context.globalState.get('tamagotchiExists')) {
-        vscode.window.showInformationMessage('No Tamagotchi! Create one first.');
+        vscode.window.showInformationMessage('No pets! Create one first.');
         return;
     }
 
-    vscode.window.showInformationMessage(message);
-
     let petData = context.globalState.get('pet');
     let pet = deserializePet(petData);
-	console.log(pet);
+	//console.log(pet);
+
+	message = message.replace('{name}', pet.name);
+	vscode.window.showInformationMessage(message);
 
     pet.performActivity(activity);
     await context.globalState.update('pet', pet);
@@ -86,7 +87,7 @@ function activate(context) {
 		//TODO fix this later
 		vscode.commands.registerCommand('Tamagotchi.delete', async () => {
 			try{
-				await performPetAction(context, "delete", 'Deleted Tamagotchi!');
+				await performPetAction(context, "delete", 'Deleted your pet {name}!');
 				await context.globalState.update('tamagotchiExists', false);
 				await context.globalState.update('pet', undefined);
 				return;
@@ -96,16 +97,16 @@ function activate(context) {
 		}),
 
 		vscode.commands.registerCommand('Tamagotchi.play', async () => {
-			await performPetAction(context, "play", 'Playing with Tamagotchi!');
+			await performPetAction(context, "play", 'Playing with {name}!');
 		}),
 
 		vscode.commands.registerCommand('Tamagotchi.feed', async () => {
-			await performPetAction(context, "feed", 'Feeding Tamagotchi!');
+			await performPetAction(context, "feed", 'Feeding {name}!');
 		}),
 
 		// current sprite has only 4 states
 		vscode.commands.registerCommand('Tamagotchi.sleep', async () => {
-			await performPetAction(context, "sleep", 'Tamagotchi is going to sleep!');
+			await performPetAction(context, "sleep", '{name} is going to sleep!');
 		}),
 	);
 }
