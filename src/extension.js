@@ -5,7 +5,7 @@ const vscode = require('vscode');
 let viewProvider;
 
 /**
- * Registers the Tamagotchi view in the sidebar
+ * Registers the view in the sidebar
  * @param {vscode.ExtensionContext} context
  */
 function registerView (context) {

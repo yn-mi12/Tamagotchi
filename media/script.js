@@ -23,10 +23,14 @@ const animationStates = [
         name: 'idle',
         frames: 7,
     },
-    // {
-    //     name: 'play',
-    //     frames: 8,
-    // },
+    {
+        name: 'play',
+        frames: 7,
+    },
+    {
+        name: 'sleep',
+        frames: 5,
+    },
     // {
     //     name: 'feed',
     //     frames: 8,
@@ -52,7 +56,7 @@ window.addEventListener('message', (event) => {
     if (message.command === 'setState') {
         state = message.pet.currentActivity;
         console.log("🐾 Tamagotchi state changed to:", state);
-        if(state != 'idle') state = 'idle'; // temporary fix 
+        if(state === 'delete' && state === 'feed') state = 'idle'; // temporary fix 
     }
 });
 
